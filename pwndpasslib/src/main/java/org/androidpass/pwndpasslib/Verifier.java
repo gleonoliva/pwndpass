@@ -30,7 +30,7 @@ public class Verifier {
 
 
     public Validity verify(String password) {
-        if (password.length() <= MINIMUM_PASSWORD_LENGTH) {
+        if (password.length() < MINIMUM_PASSWORD_LENGTH) {
             return Validity.TOO_SHORT;
         }
 
@@ -71,14 +71,16 @@ public class Verifier {
         char[] chars = substring.toCharArray();
         int limit = 3;
 
-        for(int i = 0; i < chars.length; i++) {
+        for(int i = 0; i < chars.length - limit; i++) {
             char c = chars[i];
-            boolean found = true;
+            boolean found = false;
             for (int j = 1; j < limit && i + j < chars.length; j++) {
                 char d = (char) (ascending ? c + j : c - j);
                 if (chars[i + j] != d || !Character.isLetterOrDigit(c)) {
                     found = false;
                     break;
+                } else {
+                    found = true;
                 }
             }
 

@@ -14,7 +14,7 @@ public class ExampleUnitTest {
     @Test
     public void testWithPassword() {
         Verifier v = new Verifier();
-        assertTrue(v.verify("password") == Verifier.Validity.BREACHED);
+        assertEquals(v.verify("password"), Verifier.Validity.BREACHED);
     }
 
     @Test
