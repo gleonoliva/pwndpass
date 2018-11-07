@@ -14,4 +14,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="error_password_too_short">This password is too short</string>
+    <string name="error_password_sequential">This password contains sequential characters</string>
+    <string name="error_password_repetitve">This password contains repeated characters</string>
+    <string name="error_password_breached">This password has been breached previously</string>
 </resources>

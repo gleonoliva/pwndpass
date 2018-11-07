@@ -29,6 +29,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.androidpass.pwndpasslib.Verifier;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,8 +162,30 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+        Verifier v = new Verifier();
+        Verifier.Validity valid = v.verify(password);
+        if (valid != Verifier.Validity.VALID) {
+            int errorMessageId = 0;
+
+            switch (valid) {
+                case TOO_SHORT:
+                    errorMessageId = R.string.error_password_too_short;
+                    break;
+                case REPETITIVE_CHARACTERS:
+                    errorMessageId = R.string.error_password_repetitve;
+                    break;
+                case SEQUENTIAL_CHARACTERS:
+                    errorMessageId = R.string.error_password_sequential;
+                    break;
+                case BREACHED:
+                    errorMessageId = R.string.error_password_breached;
+                    break;
+                default:
+                    errorMessageId = R.string.error_invalid_password;
+                    break;
+            }
+
+            mPasswordView.setError(getString(errorMessageId));
             focusView = mPasswordView;
             cancel = true;
         }
