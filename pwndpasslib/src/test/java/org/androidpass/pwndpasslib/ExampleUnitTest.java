@@ -14,18 +14,18 @@ public class ExampleUnitTest {
     @Test
     public void testWithPassword() {
         Verifier v = new Verifier();
-        assertEquals(v.verify("password"), Verifier.Validity.BREACHED);
+        v.verify("password", (validity) -> assertEquals(validity, Verifier.Validity.BREACHED));
     }
 
     @Test
     public void testAscendingSequence() {
         Verifier v = new Verifier();
-        assertTrue(v.verify("qwpeoriuabc=--") == Verifier.Validity.SEQUENTIAL_CHARACTERS);
+        v.verify("qwpeoriuabc=--", (validity) -> assertEquals(validity, Verifier.Validity.SEQUENTIAL_CHARACTERS));
     }
 
     @Test
     public void testDescendingSequence() {
         Verifier v = new Verifier();
-        assertEquals(v.verify("=4321{}-0asdiotn"), Verifier.Validity.SEQUENTIAL_CHARACTERS);
+        v.verify("=4321{}-0asdiotn", validity -> assertEquals(validity, Verifier.Validity.SEQUENTIAL_CHARACTERS));
     }
 }
