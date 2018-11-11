@@ -163,32 +163,33 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         // Check for a valid password, if the user entered one.
         Verifier v = new Verifier();
-        Verifier.Validity valid = v.verify(password);
-        if (valid != Verifier.Validity.VALID) {
-            int errorMessageId = 0;
+        v.verify(password, (valid) -> {
+            if (valid != Verifier.Validity.VALID) {
+                int errorMessageId = 0;
 
-            switch (valid) {
-                case TOO_SHORT:
-                    errorMessageId = R.string.error_password_too_short;
-                    break;
-                case REPETITIVE_CHARACTERS:
-                    errorMessageId = R.string.error_password_repetitve;
-                    break;
-                case SEQUENTIAL_CHARACTERS:
-                    errorMessageId = R.string.error_password_sequential;
-                    break;
-                case BREACHED:
-                    errorMessageId = R.string.error_password_breached;
-                    break;
-                default:
-                    errorMessageId = R.string.error_invalid_password;
-                    break;
+                switch (valid) {
+                    case TOO_SHORT:
+                        errorMessageId = R.string.error_password_too_short;
+                        break;
+                    case REPETITIVE_CHARACTERS:
+                        errorMessageId = R.string.error_password_repetitve;
+                        break;
+                    case SEQUENTIAL_CHARACTERS:
+                        errorMessageId = R.string.error_password_sequential;
+                        break;
+                    case BREACHED:
+                        errorMessageId = R.string.error_password_breached;
+                        break;
+                    default:
+                        errorMessageId = R.string.error_invalid_password;
+                        break;
+                }
+
+                mPasswordView.setError(getString(errorMessageId));
+                mPasswordView.requestFocus();
             }
+        });
 
-            mPasswordView.setError(getString(errorMessageId));
-            focusView = mPasswordView;
-            cancel = true;
-        }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
