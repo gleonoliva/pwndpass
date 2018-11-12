@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
-public class ExampleUnitTest {
+public class VerifierTests {
 
     @Test
     public void testWithPassword() {
@@ -27,5 +27,11 @@ public class ExampleUnitTest {
     public void testDescendingSequence() {
         Verifier v = new Verifier();
         v.verify("=4321{}-0asdiotn", validity -> assertEquals(validity, Verifier.Validity.SEQUENTIAL_CHARACTERS));
+    }
+
+    @Test
+    public void testDictionaryWord() {
+        Verifier v = new Verifier();
+        v.verify("=-apple-=", validity -> { assertEquals(validity, Verifier.Validity.DICTIONARY_WORD); });
     }
 }

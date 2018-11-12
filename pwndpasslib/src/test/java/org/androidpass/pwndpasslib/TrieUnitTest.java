@@ -2,15 +2,14 @@ package org.androidpass.pwndpasslib;
 
 import org.junit.Test;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Scanner;
-import java.util.zip.Deflater;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -18,6 +17,23 @@ import static junit.framework.TestCase.assertTrue;
 
 public class TrieUnitTest {
 
+
+    private Trie buildFromFile(String filePath) {
+        Trie t = new Trie();
+
+        try {
+            Files.lines(Paths.get(filePath), Charset.forName("UTF-8"))
+                    .filter(line -> line.length() > 3 && !line.contains("'"))
+                    .map(line -> line.trim().toLowerCase())
+                    .forEach(word -> {
+                        t.insert(word);
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return t;
+    }
 
     @Test
     public void trieInsertContainsWords() {
@@ -62,19 +78,10 @@ public class TrieUnitTest {
 
     @Test
     public void createDicitionaryTrie() throws IOException {
-        Trie t = new Trie();
-
         String inputFile = "sampledata/dict_allcat_95.txt";
         String fileName = "compressed_dict.dat";
 
-        Scanner reader = new Scanner(new File(inputFile));
-
-        while(reader.hasNext()) {
-            String word = reader.next();
-            if (word.length() > 3 && !word.contains("'")) {
-                t.insert(word);
-            }
-        }
+        Trie t = buildFromFile(inputFile);
 
         FileOutputStream fsout = new FileOutputStream(fileName);
         ObjectOutputStream out = new ObjectOutputStream(fsout);
@@ -85,20 +92,10 @@ public class TrieUnitTest {
 
     @Test
     public void createCompressedDictionaryTrie() throws IOException, ClassNotFoundException {
-        Trie t = new Trie();
-
         String inputFile = "sampledata/dict_allcat_95.txt";
         String fileName = "compressed_dict.zip";
 
-        Scanner reader = new Scanner(new File(inputFile));
-
-        while(reader.hasNext()) {
-            String word = reader.next();
-            if (word.length() > 3 && !word.contains("'")) {
-                t.insert(word);
-            }
-        }
-
+        Trie t = buildFromFile(inputFile);
 
         FileOutputStream fsout = new FileOutputStream(fileName);
         GZIPOutputStream zipout = new GZIPOutputStream(fsout);
@@ -113,7 +110,62 @@ public class TrieUnitTest {
 
         Trie t2 = (Trie) in.readObject();
 
-        assertTrue(t2.contains("Abbado"));
+        assertTrue(t2.contains("Abbado".toLowerCase()));
+        assertTrue(t2.contains("apple"));
+        assertTrue(t2.contains("fossil"));
+        assertTrue(t2.contains("gruesome"));
+    }
+
+    @Test
+    public void createCompressedDictionary70Trie() throws IOException, ClassNotFoundException {
+        String inputFile = "sampledata/dict_allcat_70.txt";
+        String fileName = "compressed_dict70.zip";
+
+        Trie t = buildFromFile(inputFile);
+
+        FileOutputStream fsout = new FileOutputStream(fileName);
+        GZIPOutputStream zipout = new GZIPOutputStream(fsout);
+        ObjectOutputStream out = new ObjectOutputStream(zipout);
+
+        out.writeObject(t);
+        out.close();
+
+        FileInputStream inputStream = new FileInputStream(fileName);
+        GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+        ObjectInputStream in = new ObjectInputStream(gzipInputStream);
+
+        Trie t2 = (Trie) in.readObject();
+
+        assertTrue(t2.contains("Addison".toLowerCase()));
+        assertTrue(t2.contains("apple"));
+        assertTrue(t2.contains("fossil"));
+        assertTrue(t2.contains("gruesome"));
+    }
+
+    @Test
+    public void createCompressedDictionaryTrie50() throws IOException, ClassNotFoundException {
+        String inputFile = "sampledata/dict_allcat_50.txt";
+        String fileName = "compressed_dict50.zip";
+
+        Trie t = buildFromFile(inputFile);
+
+        FileOutputStream fsout = new FileOutputStream(fileName);
+        GZIPOutputStream zipout = new GZIPOutputStream(fsout);
+        ObjectOutputStream out = new ObjectOutputStream(zipout);
+
+        out.writeObject(t);
+        out.close();
+
+        FileInputStream inputStream = new FileInputStream(fileName);
+        GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+        ObjectInputStream in = new ObjectInputStream(gzipInputStream);
+
+        Trie t2 = (Trie) in.readObject();
+
+        assertTrue(t2.contains("Adela".toLowerCase()));
+        assertTrue(t2.contains("apple"));
+        assertTrue(t2.contains("fossil"));
+        assertTrue(t2.contains("gruesome"));
     }
 
 }

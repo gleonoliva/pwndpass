@@ -1,7 +1,11 @@
 package org.androidpass.pwndpasslib;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 public class Verifier {
 
@@ -88,8 +92,43 @@ public class Verifier {
     }
 
     private boolean isDictionaryWord(String password) {
+        Pattern p = Pattern.compile("(\\w)+");
+        Matcher m = p.matcher(password);
+
+        Trie t = loadDictionary();
+
+        while(m.find()) {
+            String substring = m.group();
+
+            if (t.contains(substring.toLowerCase())) {
+                return true;
+            }
+        }
 
         return false;
+    }
+
+    private Trie loadDictionary() {
+
+        // Hack because Android requires a heavy-weight context to access resources
+        Class<? extends Trie> aClass = Trie.class;
+        InputStream in = aClass.getResourceAsStream("/res/raw/compressed_dict.zip");
+
+        try {
+            GZIPInputStream zip = new GZIPInputStream(in);
+            ObjectInputStream objectInputStream = new ObjectInputStream(zip);
+
+            Trie loadedDictionary = (Trie) objectInputStream.readObject();
+
+            return loadedDictionary;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 }
