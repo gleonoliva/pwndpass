@@ -2,8 +2,13 @@ package org.androidpass.pwndpasslib;
 
 import org.junit.Test;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,12 +27,15 @@ public class TrieUnitTest {
         Trie t = new Trie();
 
         try {
-            Files.lines(Paths.get(filePath), Charset.forName("UTF-8"))
-                    .filter(line -> line.length() > 3 && !line.contains("'"))
-                    .map(line -> line.trim().toLowerCase())
-                    .forEach(word -> {
-                        t.insert(word);
-                    });
+            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim().toLowerCase();
+                if (line.length() > 3 && !line.contains("'")) {
+                    t.insert(line.trim());
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -145,7 +153,7 @@ public class TrieUnitTest {
     @Test
     public void createCompressedDictionaryTrie50() throws IOException, ClassNotFoundException {
         String inputFile = "sampledata/dict_allcat_50.txt";
-        String fileName = "compressed_dict50.zip";
+        String fileName = "dict.gz";
 
         Trie t = buildFromFile(inputFile);
 
@@ -166,6 +174,74 @@ public class TrieUnitTest {
         assertTrue(t2.contains("apple"));
         assertTrue(t2.contains("fossil"));
         assertTrue(t2.contains("gruesome"));
+    }
+
+
+    @Test
+    public void createCompressedDictionaryTrie35() throws IOException, ClassNotFoundException {
+        String inputFile = "sampledata/dict_allcat_35.txt";
+        String fileName = "dict.gz";
+
+        Trie t = buildFromFile(inputFile);
+
+        FileOutputStream fsout = new FileOutputStream(fileName);
+        GZIPOutputStream zipout = new GZIPOutputStream(fsout);
+        ObjectOutputStream out = new ObjectOutputStream(zipout);
+
+        out.writeObject(t);
+        out.close();
+
+        FileInputStream inputStream = new FileInputStream(fileName);
+        GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+        ObjectInputStream in = new ObjectInputStream(gzipInputStream);
+
+        Trie t2 = (Trie) in.readObject();
+
+        assertTrue(t2.contains("apple"));
+        assertTrue(t2.contains("fossil"));
+        assertTrue(t2.contains("gruesome"));
+    }
+
+    @Test
+    public void createCompressedDictionaryTrie20() throws IOException, ClassNotFoundException {
+        String inputFile = "sampledata/dict_allcat_20.txt";
+        String fileName = "dict.gz";
+
+        Trie t = buildFromFile(inputFile);
+
+        FileOutputStream fsout = new FileOutputStream(fileName);
+        GZIPOutputStream zipout = new GZIPOutputStream(fsout);
+        ObjectOutputStream out = new ObjectOutputStream(zipout);
+
+        out.writeObject(t);
+        out.close();
+
+        FileInputStream inputStream = new FileInputStream(fileName);
+        GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+        ObjectInputStream in = new ObjectInputStream(gzipInputStream);
+
+        Trie t2 = (Trie) in.readObject();
+
+        assertTrue(t2.contains("apple"));
+        assertTrue(t2.contains("fossil"));
+    }
+
+    @Test
+    public void createCompressedDictionaryTrie20Filtered() throws IOException, ClassNotFoundException {
+        String inputFile = "sampledata/dict_allcat_20.txt";
+        String fileName = "dict_f.txt";
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+        BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim().toLowerCase();
+            if (line.length() > 3 && !line.contains("'")) {
+                writer.write(line, 0, line.length());
+                writer.newLine();
+            }
+        }
     }
 
 }

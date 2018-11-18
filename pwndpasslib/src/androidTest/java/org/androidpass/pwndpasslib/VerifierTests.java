@@ -15,4 +15,11 @@ public class VerifierTests {
         Verifier v = new Verifier();
         v.verify("=-apple-=", validity -> { assertEquals(validity, Verifier.Validity.DICTIONARY_WORD); });
     }
+
+    @Test
+    public void testWithPassword() {
+        Verifier v = new Verifier();
+        v.verify("password", (validity) -> assertEquals(validity, Verifier.Validity.BREACHED));
+    }
+
 }

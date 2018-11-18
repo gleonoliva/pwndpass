@@ -1,8 +1,10 @@
 package org.androidpass.pwndpasslib;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -10,6 +12,8 @@ import java.util.zip.GZIPInputStream;
 public class Verifier {
 
     private static final int MINIMUM_PASSWORD_LENGTH = 8;
+
+    private static Trie dictionaryTrie;
 
     public enum Validity {
         VALID,
@@ -26,16 +30,15 @@ public class Verifier {
 
     }
 
-
     public void verify(String password, ValidityResult result) {
         if (password.length() < MINIMUM_PASSWORD_LENGTH) {
             result.getResult(Validity.TOO_SHORT);
-        } else if (isDictionaryWord(password)) {
-            result.getResult(Validity.DICTIONARY_WORD);
         } else if (containsRepetitiveCharacters(password)) {
             result.getResult(Validity.REPETITIVE_CHARACTERS);
         } else if (containsSequentialCharacters(password)) {
             result.getResult(Validity.SEQUENTIAL_CHARACTERS);
+        } else if (isDictionaryWord(password)) {
+            result.getResult(Validity.DICTIONARY_WORD);
         } else {
             BreachedPasswordCheckerTask breachedTask = new BreachedPasswordCheckerTask(result);
             breachedTask.execute(password);
@@ -108,27 +111,53 @@ public class Verifier {
         return false;
     }
 
-    private Trie loadDictionary() {
+    private Trie buildFromStream(InputStream input) {
+        Trie t = new Trie();
 
-        // Hack because Android requires a heavy-weight context to access resources
-        Class<? extends Trie> aClass = Trie.class;
-        InputStream in = aClass.getResourceAsStream("/res/raw/compressed_dict.zip");
+        if (input != null) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+                ArrayList<String> allLines = new ArrayList<>();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    allLines.add(line);
+                }
 
-        try {
-            GZIPInputStream zip = new GZIPInputStream(in);
-            ObjectInputStream objectInputStream = new ObjectInputStream(zip);
-
-            Trie loadedDictionary = (Trie) objectInputStream.readObject();
-
-            return loadedDictionary;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+                for (String word : allLines) {
+                    t.insert(word);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        return null;
+        return t;
     }
+
+    private Trie buildFromZippedStream(InputStream input) {
+        if (input != null) {
+            try {
+                GZIPInputStream zip = new GZIPInputStream(input, 65536);
+                Trie loadedDictionary = buildFromStream(zip);
+                return loadedDictionary;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return new Trie();
+    }
+
+    private Trie loadDictionary() {
+        if (dictionaryTrie == null) {
+            // Hack because Android requires a heavy-weight context to access resources
+            Class<? extends Trie> aClass = Trie.class;
+            InputStream in = aClass.getResourceAsStream("/res/raw/dict.gz");
+            dictionaryTrie = buildFromZippedStream(in);
+        }
+
+        return dictionaryTrie;
+    }
+
 
 }

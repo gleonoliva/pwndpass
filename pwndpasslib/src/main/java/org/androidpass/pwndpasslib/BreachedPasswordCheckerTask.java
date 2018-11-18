@@ -45,10 +45,16 @@ public class BreachedPasswordCheckerTask extends AsyncTask<String, Void, Boolean
             HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("User-Agent", "PwndPass-For-Android");
+            urlConnection.setConnectTimeout(2000);
+            urlConnection.setReadTimeout(2000);
 
+            urlConnection.connect();
             BufferedInputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
             String response = readResponse(in);
+
+            in.close();
+            urlConnection.disconnect();
 
             boolean breached = response.contains(passwordHash.substring(5));
             return breached;
@@ -56,6 +62,8 @@ public class BreachedPasswordCheckerTask extends AsyncTask<String, Void, Boolean
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
