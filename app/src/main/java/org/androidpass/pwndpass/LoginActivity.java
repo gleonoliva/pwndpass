@@ -3,6 +3,7 @@ package org.androidpass.pwndpass;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -94,7 +95,9 @@ public class LoginActivity extends AppCompatActivity {
 
         // Check for a valid password, if the user entered one.
         Verifier v = new Verifier();
+        Activity thisActivity = this;
         v.verify(password, (valid) -> {
+            showProgress(false);
             if (valid != Verifier.Validity.VALID) {
                 int errorMessageId = 0;
 
@@ -119,9 +122,10 @@ public class LoginActivity extends AppCompatActivity {
                 mPasswordView.setError(getString(errorMessageId));
                 mPasswordView.requestFocus();
             } else {
-                Toast.makeText(this, "This is a safe password to use", Toast.LENGTH_LONG).show();
+                Toast.makeText(thisActivity, "This is a safe password to use", Toast.LENGTH_LONG).show();
             }
         });
+        showProgress(true);
     }
 
     /**

@@ -1,5 +1,7 @@
 package org.androidpass.pwndpasslib;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -151,9 +153,11 @@ public class Verifier {
     private Trie loadDictionary() {
         if (dictionaryTrie == null) {
             // Hack because Android requires a heavy-weight context to access resources
+            long startTime = System.nanoTime();
             Class<? extends Trie> aClass = Trie.class;
             InputStream in = aClass.getResourceAsStream("/res/raw/dict.gz");
             dictionaryTrie = buildFromZippedStream(in);
+            Log.d("TIME_TO_LOAD_DICTIONARY", Long.toString(System.nanoTime() - startTime));
         }
 
         return dictionaryTrie;
